@@ -126,8 +126,9 @@ const isLongBody = computed(() => configuration.value.stand === "floor");
     </div>
 
     <div class="pointer-events-none absolute left-4 top-4 rounded-xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm backdrop-blur">
-      <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">AeroStation S4</p>
+      <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">AeroStation S4 · {{ store.revision.revisionId }}</p>
       <p class="mt-1 text-sm font-black text-slate-800">{{ store.options.color.name }} · {{ store.options.material.name }}</p>
+      <p v-if="store.invalidOptions.length" class="mt-0.5 text-[10px] font-bold text-red-600">{{ store.invalidOptions.length }} 个选项失效 · {{ store.dependencyMessage }}</p>
     </div>
     <div class="pointer-events-none absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-2 text-[11px] text-white backdrop-blur">
       <span class="h-2 w-2 rounded-full bg-emerald-400" /> 拖拽旋转 · 滚轮缩放

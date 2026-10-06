@@ -1,17 +1,25 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/vue";
-import type { ProductGroup } from "../types/product";
+import type { ProductGroup } from "../data/configData";
 import { formatPrice } from "../utils/share";
 
 defineProps<{
   group: ProductGroup;
   selected: string;
   disabled: (optionId: string) => boolean;
+  stockOf: (optionId: string) => number;
+  invalidReason?: string;
 }>();
 
 const emit = defineEmits<{
   select: [optionId: string];
 }>();
+
+function stockLabel(qty: number): { text: string; cls: string } | null {
+  if (qty <= 0) return { text: "缺货", cls: "bg-red-100 text-red-700" };
+  if (qty < 5) return { text: `库存 ${qty}`, cls: "bg-amber-100 text-amber-700" };
+  return null;
+}
 </script>
 
 <template>
@@ -25,6 +33,10 @@ const emit = defineEmits<{
         {{ group.options.find((item) => item.id === selected)?.name }}
       </span>
     </div>
+
+    <p v-if="invalidReason" class="mb-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-bold text-red-700">
+      {{ invalidReason }}
+    </p>
 
     <Listbox :model-value="selected" @update:model-value="emit('select', $event)">
       <div class="relative">
@@ -69,7 +81,14 @@ const emit = defineEmits<{
                   </div>
                   <p class="mt-0.5 text-[10px] text-slate-400">{{ option.description }}</p>
                 </div>
-                <span class="font-bold text-slate-500">{{ option.price ? `+${formatPrice(option.price)}` : "标配" }}</span>
+                <span class="flex items-center gap-2">
+                  <span
+                    v-if="stockLabel(stockOf(option.id))"
+                    class="rounded-full px-2 py-0.5 text-[10px] font-black"
+                    :class="stockLabel(stockOf(option.id))!.cls"
+                  >{{ stockLabel(stockOf(option.id))!.text }}</span>
+                  <span class="font-bold text-slate-500">{{ option.price ? `+${formatPrice(option.price)}` : "标配" }}</span>
+                </span>
               </li>
             </ListboxOption>
           </ListboxOptions>

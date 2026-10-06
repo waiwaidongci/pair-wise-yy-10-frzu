@@ -1,22 +1,26 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 import { useConfiguratorStore } from "../stores/configurator";
-import { decodeConfiguration, formatPrice } from "../utils/share";
+import { decodeSharePayload, formatPrice } from "../utils/share";
 import ProductScene from "../components/ProductScene.vue";
 
 const route = useRoute();
 const router = useRouter();
 const store = useConfiguratorStore();
+const { invalidOptions, conflicts } = storeToRefs(store);
 const valid = ref(true);
+const isLegacy = ref(false);
 
 onMounted(() => {
-  const next = decodeConfiguration(String(route.params.payload ?? ""));
-  if (!Object.keys(next).length) {
+  const payload = decodeSharePayload(String(route.params.payload ?? ""));
+  if (!payload) {
     valid.value = false;
     return;
   }
-  store.applyConfiguration(next);
+  isLegacy.value = !payload.rev;
+  store.applySharePayload(payload);
 });
 </script>
 
@@ -31,6 +35,30 @@ onMounted(() => {
         </div>
         <button class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white" @click="router.push('/')">继续调整配置</button>
       </header>
+
+      <!-- 修订与失效状态 -->
+      <div class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs shadow-sm">
+        <span class="font-black uppercase tracking-wider text-slate-400">当前修订</span>
+        <span class="rounded-full bg-slate-900 px-2 py-0.5 font-mono font-bold text-white">{{ store.revision.revisionId }}</span>
+        <span v-if="isLegacy" class="rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700">旧链接已补成首版</span>
+        <span class="text-slate-300">|</span>
+        <span>基础价 {{ formatPrice(store.revision.basePrice) }}</span>
+        <span class="text-slate-300">|</span>
+        <span>规则 v{{ store.revision.dependencyRulesVersion }}</span>
+        <span class="text-slate-300">|</span>
+        <span>库存批次 v{{ store.revision.inventoryVersion }}</span>
+      </div>
+
+      <div v-if="invalidOptions.length" class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4">
+        <p class="text-sm font-black text-red-700">该配置有 {{ invalidOptions.length }} 个选项失效，无法锁定报价</p>
+        <ul class="mt-2 list-inside list-disc text-xs text-red-700">
+          <li v-for="inv in invalidOptions" :key="`${inv.groupId}:${inv.optionId}`">{{ inv.reason }}</li>
+        </ul>
+      </div>
+      <div v-if="conflicts.length" class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <p class="text-sm font-black text-amber-800">该配置有 {{ conflicts.length }} 处字段冲突待裁清</p>
+      </div>
+
       <div class="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div class="h-[620px]"><ProductScene /></div>
         <aside class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
