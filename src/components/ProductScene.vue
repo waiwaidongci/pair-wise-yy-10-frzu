@@ -7,7 +7,9 @@ import CameraRig from "./CameraRig.vue";
 import { useConfiguratorStore } from "../stores/configurator";
 
 const store = useConfiguratorStore();
-const { configuration, cameraPreset } = storeToRefs(store);
+const { configuration, cameraPreset, headRevision, invalidations } = storeToRefs(store);
+
+const props = defineProps<{ preview?: boolean }>();
 
 const palette: Record<string, string> = {
   graphite: "#343941",
@@ -128,6 +130,26 @@ const isLongBody = computed(() => configuration.value.stand === "floor");
     <div class="pointer-events-none absolute left-4 top-4 rounded-xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm backdrop-blur">
       <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">AeroStation S4</p>
       <p class="mt-1 text-sm font-black text-slate-800">{{ store.options.color.name }} · {{ store.options.material.name }}</p>
+      <p class="mt-0.5 text-[10px] font-bold text-blue-700">
+        {{ props.preview ? "预览修订（按链接快照）" : `当前修订 ${headRevision?.id}（第 ${headRevision?.number} 版）` }}
+      </p>
+    </div>
+
+    <!-- 三维预览内联失效原因：只显示受影响项 -->
+    <div v-if="!props.preview && invalidations.length" class="pointer-events-none absolute right-4 top-4 z-20 w-[250px] space-y-1.5">
+      <div
+        v-for="(reason, index) in invalidations.slice(0, 4)"
+        :key="index"
+        class="rounded-lg border px-2.5 py-1.5 text-[10px] font-bold shadow-sm backdrop-blur"
+        :class="{
+          'border-red-200 bg-red-50/90 text-red-800': reason.kind === 'conflict' || reason.kind === 'stock',
+          'border-amber-200 bg-amber-50/90 text-amber-800': reason.kind === 'rule' || reason.kind === 'batch' || reason.kind === 'base',
+        }"
+      >
+        <span class="font-black">[{{ { conflict: '冲突', stock: '库存', rule: '规则', batch: '批次', base: '基础价' }[reason.kind] }}]</span>
+        {{ reason.reason }}
+      </div>
+      <p v-if="invalidations.length > 4" class="text-right text-[10px] font-bold text-amber-700">等 {{ invalidations.length }} 条失效原因…</p>
     </div>
     <div class="pointer-events-none absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-2 text-[11px] text-white backdrop-blur">
       <span class="h-2 w-2 rounded-full bg-emerald-400" /> 拖拽旋转 · 滚轮缩放
