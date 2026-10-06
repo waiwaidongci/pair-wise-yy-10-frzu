@@ -1,0 +1,11 @@
+{
+  "projectId": "pair-wise-yy-10",
+  "projectName": "AeroStation 三维产品配置器",
+  "category": "三维配置器",
+  "businessDomain": "研发工具",
+  "projectForm": "完整项目",
+  "codeScope": "frontend",
+  "languages": "Vue 3, TypeScript, Three.js, TresJS, Pinia, Tailwind, Vue Router, Vite",
+  "summary": "三维产品配置器，支持部件与材质切换、选项依赖、价格联动、相机预设与分享链接还原。",
+  "containerized": false
+}

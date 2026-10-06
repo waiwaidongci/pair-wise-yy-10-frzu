@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: true
+  vue-demi: true
+
+overrides:
+  rollup: "npm:@rollup/wasm-node@^4.64.0"

@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: "Avenir Next", "PingFang SC", sans-serif;
+  color: #20242a;
+  background: #eef1f4;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+}
+
+.config-grid {
+  background-image: radial-gradient(#cbd2da 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: #b9c0c9 transparent;
+}
